@@ -28,6 +28,7 @@ def list_snapshots(project):
     "List EC2 snapshots"
     instances = filter_instances(project)
     for i in instances:
+
         for v in i.volumes.all():
             for s in v.snapshots.all():
                 print(", ".join((
@@ -72,9 +73,20 @@ def create_snapshots(project):
     "Create Snapshot"
     instances = filter_instances(project)
     for i in instances:
+        print ("Stopping {0}...".format(i.id))
+        i.stop()
+        i.wait_until_stopped()
+
+
         for v in i.volumes.all():
             print("creating snapshot of {0}".format(v.id))
             v.create_snapshot(Description="Created by the boss")
+
+            print ("Starting {0}...".format(i.id))
+            i.start()
+            i.wait_until_running()
+    print ("Job Done...")
+
     return
 
 @instances.command('list')
